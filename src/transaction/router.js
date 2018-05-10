@@ -1,24 +1,20 @@
 const express = require('express');
 
-const transctionInsert =require('./transctionInsert');
-const transctionUpdate=require('./transctionUpdate');
-const transctionView=require('./transctionView');
+
 var router = express.Router();
 
-router.post('/insert',function(req,res){
-
-  console.log(req.body);
-  transctionInsert(req,res);
-});
-
-router.post('/update',function (req,res) {
-  console.log(req.body);
-  transctionUpdate(req,res);
-});
+var generalDbApi=require('../generalCRUD/generalDbApi');
 
 router.get('/',function(req,res){
+    generalDbApi.view("transactions",req,res);
+});
 
-transctionView(req,res);
+router.post('/insert',function(req,res){
+    generalDbApi.insert("transactions",req,res);
+});
+
+router.post("/update",function(req,res){
+    generalDbApi.update("transactions",req,res);
 });
 
 module.exports=router;

@@ -2,25 +2,50 @@ var connection =require("../dbConnection/connection");
 
 
 function insertData(tablename,data,successCallback,errorCallback){
+try {
+  var colNamesList=Object.keys(data);
+  var colNames=""
+  var colValue=[]
+  console.log(colNamesList)
+  colNamesList.forEach((name)=>{
+    if (colNames!=="")
+    {
+    colNames+=","+name;
+      }
+    else {
+      colNames+=name;
+    }
+    colValue.push(data[name])
+  })
 
-  var query = connection.query(`INSERT INTO ${tablename} SET ?`, data, function (error, results, fields) {
+  var questionMark="?,".repeat(colNamesList.length).slice(0,colNamesList.length*2-1)
+  var query = connection.run(`INSERT INTO ${tablename} (${colNames}) values (${questionMark})`,colValue, function (error, results, fields) {
     if (error)
     {
       errorCallback(error);
+      return;
     }
     successCallback(results);
     // Neat!
   });
+}
+catch(err){
+  errorCallback(err);
+  console.log("Catched")
+  console.log(err)
+}
 }
 
 
 
 function viewAllData(tablename,successCallback,errorCallback){
 
-  var query= connection.query(`select * from ${tablename}`,function (error,results,fields) {
+  var query= connection.all(`select * from ${tablename}`,function (error,results) {
     if(error){
       errorCallback(error);
+      return;
     }
+    console.log(results)
     successCallback(results);
 
   });
@@ -30,7 +55,7 @@ function viewAllData(tablename,successCallback,errorCallback){
 
 function updateData(tablename,data,successCallback,errorCallback){
 var post=[];
-
+//pass update under u object and where under w object table column name should be matched
 var updateSet=Object.entries(data.u).reduce(function(prev,elemen){
 post.push(elemen[1]);
 return prev+","+elemen[0]+"=?";
@@ -48,8 +73,8 @@ var qq=`UPDATE ${tablename} SET ${updateSet} where ${whereCondition}`;
   var query=connection.query(qq,post,function(error,results,fields){
     if(error)
     {
-      throw error;
       errorCallback(false);
+      return;
     }
     successCallback(true);
   });
